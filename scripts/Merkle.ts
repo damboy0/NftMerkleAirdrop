@@ -15,17 +15,27 @@ export async function generateMerkleTree(filePath: string) {
         amounts.push(row.amount);
       })
       .on("end", () => {
+        console.log("Recipients:", recipients);
+        console.log("Amounts:", amounts);
+
         const leaves = recipients.map((recipient, index) =>
           keccak256(recipient + amounts[index])
         );
+
+        console.log("Leaves:", leaves);
+
         const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
         const root = tree.getHexRoot();
+
+        console.log("Merkle Root:", root);
 
         const proofs = recipients.map((recipient, index) => ({
           address: recipient,
           amount: amounts[index],
           proof: tree.getHexProof(leaves[index]),
         }));
+
+        console.log("Proofs:", proofs);
 
         resolve({ root, proofs });
       })
