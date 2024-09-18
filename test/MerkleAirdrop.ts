@@ -32,16 +32,20 @@ describe("MerkleAirdrop", function () {
   }
 
   describe("Deployment", function () {
+   
     it("Should set the correct owner for the token contract", async function () {
-      const { damboyToken, owner } = await loadFixture(deployMerkleAirdrop);
-      expect(await damboyToken.owner()).to.equal(owner.address);
-    });
+        const { damboyToken, owner } = await loadFixture(deployMerkleAirdrop);
+        expect(await damboyToken.owner()).to.equal(owner.address);
+      });
 
-    it("Should deploy the MerkleAirdrop contract with correct Merkle root", async function () {
-      const { merkleAirdrop, proofs } = await loadFixture(deployMerkleAirdrop);
-
-      const rootFromContract = await merkleAirdrop.merkleRoot();
-      expect(rootFromContract).to.equal(proofs[0].root); 
-    });
+      it("Should deploy the MerkleAirdrop contract with correct Merkle root", async function () {
+        const { merkleAirdrop, proofs } = await loadFixture(deployMerkleAirdrop);
+  
+        const rootFromContract = await merkleAirdrop.merkleRoot();
+        console.log("Root from contract:", rootFromContract);
+        console.log("Expected root:", proofs[0]?.root);
+  
+        expect(rootFromContract).to.equal(proofs[0]?.root); // Ensure the correct Merkle root is set
+      });
   });
 });
