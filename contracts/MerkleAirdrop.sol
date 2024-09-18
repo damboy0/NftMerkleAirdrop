@@ -37,4 +37,9 @@ contract MerkleAirdrop is Ownable(msg.sender) {
 
         emit AirdropClaimed(msg.sender, amount);
     }
+
+
+     function checkContractBalance() external view onlyOwner returns (uint256) {
+        return token.balanceOf(address(this));
+    }
 }
