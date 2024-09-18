@@ -9,16 +9,15 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 contract MerkleAirdrop is Ownable(msg.sender) {
     IERC20 public token;
     bytes32 public merkleRoot;
-    address public BAYC_ADDRESS;
+    address public constant BAYC_ADDRESS = 0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D; 
 
     mapping(address => bool) public claimed;
 
     event AirdropClaimed(address indexed user, uint256 amount);
 
-    constructor(address _token, bytes32 _merkleRoot, address _baycAddress) {
+    constructor(address _token, bytes32 _merkleRoot) {
         token = IERC20(_token);
         merkleRoot = _merkleRoot;
-        BAYC_ADDRESS = _baycAddress;
     }
 
     modifier onlyBAYCHolder() {
@@ -29,13 +28,11 @@ contract MerkleAirdrop is Ownable(msg.sender) {
     function claim(uint256 amount, bytes32[] calldata merkleProof) external onlyBAYCHolder {
         require(!claimed[msg.sender], "Airdrop already claimed.");
 
-        
-        bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount)); //verify using merkleproof
+        bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount)); // Verify using merkleproof
         require(MerkleProof.verify(merkleProof, merkleRoot, leaf), "Invalid Merkle Proof.");
 
         claimed[msg.sender] = true;
 
-        
         require(token.transfer(msg.sender, amount), "Token transfer failed.");
 
         emit AirdropClaimed(msg.sender, amount);
