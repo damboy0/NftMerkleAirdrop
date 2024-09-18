@@ -57,26 +57,25 @@ describe("MerkleAirdrop", function () {
       const { damboyToken, merkleAirdrop, owner, claimer1, proofs } =
         await loadFixture(deployMerkleAirdrop);
 
-      // Get proof for claimer1 from the generated Merkle tree data
+      
       const claimerProof = proofs.find((proof: any) => proof.address === claimer1.address);
 
-      // Fund the airdrop contract with tokens
+      
       const AirdropPool = ethers.parseUnits("10000", 18);
       await damboyToken.connect(owner).transfer(merkleAirdrop.getAddress(), AirdropPool);
 
       const claimedAmt = ethers.parseUnits(claimerProof.amount, 18);
 
-      // Claim tokens
+      
       await merkleAirdrop.connect(claimer1).claim(claimedAmt, claimerProof.proof);
 
-      // Verify the claimer's balance after the claim
+     
       expect(await damboyToken.balanceOf(claimer1.address)).to.equal(claimedAmt);
     });
 
     it("Should reject a claim with an invalid Merkle proof", async function () {
       const { merkleAirdrop, claimer1 } = await loadFixture(deployMerkleAirdrop);
 
-      // Try to claim with an invalid proof
       const invalidProof: BytesLike[] = [];
 
       await expect(merkleAirdrop.connect(claimer1).claim(ethers.parseUnits("100", 18), invalidProof))
