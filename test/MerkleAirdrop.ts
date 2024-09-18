@@ -1,67 +1,48 @@
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { ethers } from "hardhat";
-const helpers = require("@nomicfoundation/hardhat-network-helpers");
-
-import { generateMerkleTree } from "../scripts/Merkle";
 import path from "path";
+import { generateMerkleTree } from "../scripts/Merkle";
 
 describe("MerkleAirdrop", function () {
-  
+
   async function deployToken() {
-    const owner = "0xf584F8728B874a6a5c7A8d4d387C9aae9172D621"; 
-    const claimer1 = "0xF22742F06e4F6d68A8d0B49b9F270bB56affAB38"; 
+    const [owner, claimer1] = await ethers.getSigners(); // Use Hardhat's default accounts
 
-   
-    await helpers.impersonateAccount(owner);
-    await helpers.impersonateAccount(claimer1);
-    
-    const ownerSigner = await ethers.getSigner(owner);
-    const claimer1Signer = await ethers.getSigner(claimer1);
+    // Deploy Damboy token
+    const Damboy = await ethers.getContractFactory("Damboy");
+    const damboyToken = await Damboy.connect(owner).deploy();
 
-    
-    const Token = await ethers.getContractFactory("ERC20Mock");
-    const roccoToken = await Token.connect(ownerSigner).deploy(
-      "Damboy Token",
-      "DMB",
-      ownerSigner.address,
-      ethers.utils.parseUnits("100000", 18) // Mint 100k tokens
-    );
-
-    return { roccoToken, ownerSigner, claimer1Signer };
+    return { damboyToken, owner, claimer1 };
   }
 
-
   async function deployMerkleAirdrop() {
-    const { roccoToken, ownerSigner, claimer1Signer } = await loadFixture(deployToken);
+    const { damboyToken, owner, claimer1 } = await loadFixture(deployToken);
 
     // Generate Merkle tree and proofs from the CSV
     const { root, proofs } = await generateMerkleTree(path.join(__dirname, "../file/airdrop.csv"));
 
     // Deploy MerkleAirdrop contract
     const MerkleAirdrop = await ethers.getContractFactory("MerkleAirdrop");
-    const merkleAirdrop = await MerkleAirdrop.connect(ownerSigner).deploy(
-      roccoToken.address,
-      root,
-      "0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D" 
+    const merkleAirdrop = await MerkleAirdrop.connect(owner).deploy(
+      damboyToken.getAddress(),
+      root
     );
 
-    return { roccoToken, merkleAirdrop, ownerSigner, claimer1Signer, proofs };
+    return { damboyToken, merkleAirdrop, owner, claimer1, proofs };
   }
 
   describe("Deployment", function () {
     it("Should set the correct owner for the token contract", async function () {
-      const { roccoToken, ownerSigner } = await loadFixture(deployMerkleAirdrop);
-      expect(await roccoToken.owner()).to.equal(ownerSigner.address);
+      const { damboyToken, owner } = await loadFixture(deployMerkleAirdrop);
+      expect(await damboyToken.owner()).to.equal(owner.address);
     });
 
     it("Should deploy the MerkleAirdrop contract with correct Merkle root", async function () {
-      const { merkleAirdrop, ownerSigner, proofs } = await loadFixture(deployMerkleAirdrop);
+      const { merkleAirdrop, proofs } = await loadFixture(deployMerkleAirdrop);
 
       const rootFromContract = await merkleAirdrop.merkleRoot();
       expect(rootFromContract).to.equal(proofs[0].root); // Ensure the correct Merkle root is set
     });
   });
-
-  
 });
