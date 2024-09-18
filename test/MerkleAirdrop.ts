@@ -7,9 +7,8 @@ import { generateMerkleTree } from "../scripts/Merkle";
 describe("MerkleAirdrop", function () {
 
   async function deployToken() {
-    const [owner, claimer1] = await ethers.getSigners(); // Use Hardhat's default accounts
-
-    // Deploy Damboy token
+    const [owner, claimer1] = await ethers.getSigners();
+    
     const Damboy = await ethers.getContractFactory("Damboy");
     const damboyToken = await Damboy.connect(owner).deploy();
 
@@ -19,10 +18,10 @@ describe("MerkleAirdrop", function () {
   async function deployMerkleAirdrop() {
     const { damboyToken, owner, claimer1 } = await loadFixture(deployToken);
 
-    // Generate Merkle tree and proofs from the CSV
+    
     const { root, proofs } = await generateMerkleTree(path.join(__dirname, "../file/airdrop.csv"));
 
-    // Deploy MerkleAirdrop contract
+   
     const MerkleAirdrop = await ethers.getContractFactory("MerkleAirdrop");
     const merkleAirdrop = await MerkleAirdrop.connect(owner).deploy(
       damboyToken.getAddress(),
@@ -42,7 +41,7 @@ describe("MerkleAirdrop", function () {
       const { merkleAirdrop, proofs } = await loadFixture(deployMerkleAirdrop);
 
       const rootFromContract = await merkleAirdrop.merkleRoot();
-      expect(rootFromContract).to.equal(proofs[0].root); // Ensure the correct Merkle root is set
+      expect(rootFromContract).to.equal(proofs[0].root); 
     });
   });
 });
