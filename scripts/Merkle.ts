@@ -35,7 +35,7 @@ export async function generateMerkleTree(filePath: string) {
           proof: tree.getHexProof(leaves[index]),
         }));
 
-        // console.log("Proofs:", proofs);
+       
 
         resolve({ root, proofs });
       })
