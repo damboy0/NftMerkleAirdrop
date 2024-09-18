@@ -22,8 +22,8 @@ describe("MerkleAirdrop", function () {
     // Deploy ERC20 mock token
     const Token = await ethers.getContractFactory("ERC20Mock");
     const roccoToken = await Token.connect(ownerSigner).deploy(
-      "Rocco Token",
-      "ROC",
+      "Damboy Token",
+      "DMB",
       ownerSigner.address,
       ethers.utils.parseUnits("100000", 18) // Mint 100k tokens
     );
